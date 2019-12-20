@@ -1,0 +1,141 @@
+from tkinter import *
+from tkinter import messagebox
+from PIL import ImageTk, Image
+import sqlite3
+from sqlite3 import Error
+
+window = Tk()
+window.title("Economic Development Union")
+window.geometry("600x400")
+window.iconbitmap("ER_logo.ico")
+window.resizable(0,0)
+
+bgsize = (600,400)
+background = Image.open('GreenEconomy.png')
+background = background.resize(bgsize)
+bgwindow = ImageTk.PhotoImage(background)
+
+# Database
+conn = sqlite3.connect('user.db')
+c = conn.cursor()
+c.execute("""CREATE TABLE user(
+            username text,
+            password text
+)""")
+
+def insert():
+    if password_entry1.get() != confirm_password_entry.get():
+        messagebox.showerror("Password didn't match", "Use your eyes before typing password !!")
+        regiswin.quit()
+
+    if username_entry1.get()== None:
+        messagebox.showerror("Missing Username/Password", "Please check your registration again !")
+
+    else:
+        try:
+            conn = sqlite3.connect('user.db')
+            c = conn.cursor()
+            c.execute("INSERT INTO user VALUES (:username, :password)",
+                        {
+                            'username': username_entry1.get(),
+                            'password': password_entry1.get(),
+            })
+            conn.commit()
+            conn.close()
+        except Error as e:
+            messagebox.showerror("Error",e)
+
+    username_entry1.delete(0, END)
+    password_entry1.delete(0, END)
+    confirm_password_entry.delete(0, END)
+
+def login():
+    try:
+        conn = sqlite3.connect('user.db')
+        c = conn.cursor()
+        c.execute("SELECT * FROM user")
+        records = c.fetchall()
+        print(records) # list
+        user_list = [record for record in records]
+        confirmation = (username_entry.get(), password_entry.get())
+
+        if confirmation in user_list:
+            loginwindow = Toplevel()
+            loginwindow.title("Economic Development Squadron")
+
+            loginwindow.iconbitmap("ER_logo.ico")
+            logbg = ImageTk.PhotoImage(Image.open('C:/Users/Lenovo/Pictures/Anime/Coffe-Kizoku/eccbc87e4b5ce2fe28308fd9f2a7baf31-718x1024.jpg'))
+            loglabel = Label(loginwindow, image=logbg)
+            loglabel.pack()
+            loglabel.mainloop()
+        conn.commit()
+        conn.close()
+
+    except Error as e:
+        messagebox.showerror("Error", e)
+
+
+main_frame = Label(window, image=bgwindow)
+main_frame.place(relwidth=1, relheight=1)
+
+bot_label = Label(main_frame, text="Developer Squadron 2019", anchor=E, bg='#6377FF')
+bot_label.pack(side=BOTTOM, fill='x')
+
+
+sub_frame = Label(main_frame, bg='#59B381')
+sub_frame.tkraise()
+sub_frame.place(relwidth=0.5, relheight=0.5, relx= 0.5, rely=0.5, anchor="center")
+
+
+
+# Function
+def reg():
+    global username_entry1
+    global password_entry1
+    global confirm_password_entry
+    global regiswin
+    regiswin = Toplevel()
+    regiswin.title("Registration Window")
+    regiswin.iconbitmap('ER_logo.ico')
+    regiswin.geometry('400x300')
+
+    username_label1 = Label(regiswin, text="Username", width=10)
+    password_label1 = Label(regiswin, text="Password", width=10)
+    confirm_password_label = Label(regiswin, text="Confirm Password")
+    username_label1.grid(row=0, column=0, padx=3, pady=10)
+    password_label1.grid(row=1, column=0, padx=3, pady=10)
+    confirm_password_label.grid(row=2, column=0, padx=3, pady=10)
+
+    username_entry1 = Entry(regiswin, width=30, relief=SUNKEN)
+    password_entry1 = Entry(regiswin, width=30, relief=SUNKEN)
+    confirm_password_entry = Entry(regiswin, width=30, relief=SUNKEN)
+    username_entry1.grid(row=0, column=1, padx=1)
+    password_entry1.grid(row=1, column=1, padx=1)
+    confirm_password_entry.grid(row=2, column=1, padx=1)
+
+    register_button = Button(regiswin, text="Join", width=20, command=insert)
+    register_button.grid(row=3, column=1)
+
+# Labels
+username_label = Label(sub_frame, text="Username", width=10)
+password_label = Label(sub_frame,text="Password", width=10)
+username_label.grid(row=0, column=0, padx=3, pady=10)
+password_label.grid(row=1, column=0, padx=3, pady=10)
+
+# Entries
+username_entry = Entry(sub_frame, width=30,relief=SUNKEN)
+password_entry = Entry(sub_frame, width=30,relief=SUNKEN)
+username_entry.grid(row=0, column=1, padx= 1)
+password_entry.grid(row=1, column=1, padx= 1)
+
+# Buttons
+login_button = Button(sub_frame, text="Login", width=30, command=login)
+register_button = Button(sub_frame, text="Register", width=30, command=reg)
+login_button.grid(row=2, column=0, columnspan=2, pady=5)
+register_button.grid(row=3, column=0, columnspan=2, pady=5)
+
+conn.commit()
+conn.close()
+
+
+window.mainloop()
